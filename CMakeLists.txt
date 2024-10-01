@@ -1,43 +1,123 @@
+cmake_minimum_required(VERSION 3.15)  # Updated to a more recent version for better features
+
 project(FHE-BERT-Tiny)
 
-cmake_minimum_required(VERSION 3.5.1)
+# ------------------------------------------
+# 1. Specify the C++ Standard
+# ------------------------------------------
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
+# ------------------------------------------
+# 2. Option to Build Static Libraries
+# ------------------------------------------
+option(BUILD_STATIC "Set to ON to link OpenFHE statically" OFF)
+
+# ------------------------------------------
+# 3. Compiler Settings for Apple (Optional)
+# ------------------------------------------
 if(APPLE)
     set(CMAKE_C_COMPILER "/Library/Developer/CommandLineTools/usr/bin/gcc")
     set(CMAKE_CXX_COMPILER "/Library/Developer/CommandLineTools/usr/bin/g++")
 endif()
 
-set(CMAKE_CXX_STANDARD 17)
-option( BUILD_STATIC "Set to ON to include static versions of the library" OFF)
+# ------------------------------------------
+# 4. Specify OpenFHE Include and Library Directories
+# ------------------------------------------
+# OpenFHE include directory
+set(OpenFHE_INCLUDE_DIR "/usr/local/include/openfhe")
 
-find_package(OpenFHE)
+# OpenFHE library directory
+set(OpenFHE_LIB_DIR "/usr/local/lib")
 
-set( CMAKE_CXX_FLAGS ${OpenFHE_CXX_FLAGS} )
+# ------------------------------------------
+# 5. Define the Executable
+# ------------------------------------------
+add_executable(FHE-BERT-Tiny
+    src/main.cpp
+    src/FHEController.cpp
+    src/FHEController.h
+    src/Utils.h
+)
 
-include_directories( ${OPENMP_INCLUDES} )
-include_directories( ${OpenFHE_INCLUDE} )
-include_directories( ${OpenFHE_INCLUDE}/third-party/include )
-include_directories( ${OpenFHE_INCLUDE}/core )
-include_directories( ${OpenFHE_INCLUDE}/pke )
-include_directories( ${OpenFHE_INCLUDE}/binfhe )
-### add directories for other OpenFHE modules as needed for your project
+# ------------------------------------------
+# 6. Include Directories Scoped to the Target
+# ------------------------------------------
+target_include_directories(FHE-BERT-Tiny PRIVATE
+    ${OpenFHE_INCLUDE_DIR}
+    ${OpenFHE_INCLUDE_DIR}/third-party/include
+    ${OpenFHE_INCLUDE_DIR}/core
+    ${OpenFHE_INCLUDE_DIR}/pke
+    ${OpenFHE_INCLUDE_DIR}/binfhe
+    ${CMAKE_CURRENT_SOURCE_DIR}/include  # Your project's include directory
+)
 
-include_directories(include)
+# ------------------------------------------
+# 7. Link Directories
+# ------------------------------------------
+# Inform CMake where to find the OpenFHE libraries
+link_directories(${OpenFHE_LIB_DIR})
 
-link_directories( ${OpenFHE_LIBDIR} )
-link_directories( ${OPENMP_LIBRARIES} )
+# ------------------------------------------
+# 8. Find Required Packages
+# ------------------------------------------
+# OpenMP
+find_package(OpenMP REQUIRED)
+
+# GSL
+find_package(GSL REQUIRED)
+
+# ------------------------------------------
+# 9. Link Libraries Based on BUILD_STATIC Option
+# ------------------------------------------
 if(BUILD_STATIC)
-    set( CMAKE_EXE_LINKER_FLAGS "${OpenFHE_EXE_LINKER_FLAGS} -static")
-    link_libraries( ${OpenFHE_STATIC_LIBRARIES} )
+    set(OpenFHE_LIBS
+        OPENFHEbinfhe
+        OPENFHEcore
+        OPENFHEpke
+        # Add other OpenFHE static libraries as needed
+    )
+    # Link with static OpenFHE libraries
+    target_link_libraries(FHE-BERT-Tiny PRIVATE
+        ${OpenFHE_LIBS}
+        GSL::gsl
+        OpenMP::OpenMP_CXX
+    )
+    # Set linker flags for static linking if required
+    target_compile_options(FHE-BERT-Tiny PRIVATE ${OpenFHE_CXX_FLAGS})
+    target_link_options(FHE-BERT-Tiny PRIVATE ${OpenFHE_EXE_LINKER_FLAGS} -static)
 else()
-    set( CMAKE_EXE_LINKER_FLAGS ${OpenFHE_EXE_LINKER_FLAGS} )
-    link_libraries( ${OpenFHE_SHARED_LIBRARIES} )
+    set(OpenFHE_LIBS
+        OPENFHEbinfhe
+        OPENFHEcore
+        OPENFHEpke
+        # Add other OpenFHE shared libraries as needed
+    )
+    target_link_libraries(FHE-BERT-Tiny PRIVATE
+        ${OpenFHE_LIBS}
+        GSL::gsl
+        OpenMP::OpenMP_CXX
+    )
+    set_target_properties(FHE-BERT-Tiny PROPERTIES
+        BUILD_WITH_INSTALL_RPATH TRUE
+        INSTALL_RPATH "/usr/local/lib"
+    )
 endif()
 
-find_package(GSL REQUIRED)
-include_directories(${GSL_INCLUDE_DIR})
-
-
-add_executable(FHE-BERT-Tiny src/main.cpp src/FHEController.cpp src/FHEController.h src/Utils.h)
-
-
+# ------------------------------------------
+# 10. Link stdc++fs If Necessary
+# ------------------------------------------
+# Only needed for GCC versions less than 9
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    # Extract GCC version
+    execute_process(
+        COMMAND ${CMAKE_CXX_COMPILER} -dumpversion
+        OUTPUT_VARIABLE GCC_VERSION
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+    # Compare versions
+    if(GCC_VERSION VERSION_LESS "9.0")
+        target_link_libraries(FHE-BERT-Tiny PRIVATE stdc++fs)
+    endif()
+endif()

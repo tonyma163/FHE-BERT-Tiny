@@ -1,6 +1,7 @@
 #include <iostream>
 #include "FHEController.h"
 #include <chrono>
+#include <filesystem>
 
 #define GREEN_TEXT "\033[1;32m"
 #define RED_TEXT "\033[1;31m"
@@ -19,7 +20,7 @@ Ctxt pooler(Ctxt input);
 Ctxt classifier(Ctxt input);
 
 //Set to True to test the program on the IDE
-bool IDE_MODE = true;
+bool IDE_MODE = false;
 
 string input_folder;
 
@@ -441,6 +442,7 @@ void setup_environment(int argc, char *argv[]) {
     string command;
 
     if (IDE_MODE) {
+        cout << "ide" << endl;
         filesystem::remove_all("../src/tmp_embeddings");
         system("mkdir ../src/tmp_embeddings");
 

@@ -549,6 +549,7 @@ Ctxt FHEController::read_input(const string& filename, double scale) {
 
 Ptxt FHEController::read_plain_input(const string& filename, int level, double scale) {
     vector<double> input = read_values_from_file(filename);
+    cout << "check: " << input[0] << endl;
 
     int size = static_cast<int>(input.size());
 
@@ -1274,11 +1275,11 @@ Ctxt FHEController::eval_inverse(const Ctxt &c, double min, double max) {
 }
 
 Ctxt FHEController::eval_inverse_naive(const Ctxt &c, double min, double max) {
-    return context->EvalChebyshevFunction([](double x) -> double { return 1 / x; }, c, min, max, 119);
+    return context->EvalChebyshevFunction([](double x) -> double { return 1 / x; }, c, min, max, 95); // encoder1 - 1/x 119 degree
 }
 
 Ctxt FHEController::eval_inverse_naive_2(const Ctxt &c, double min, double max, double mult) {
-    return context->EvalChebyshevFunction([mult](double x) -> double { return mult / x; }, c, min, max, 200);
+    return context->EvalChebyshevFunction([mult](double x) -> double { return mult / x; }, c, min, max, 38); // encoder1 - 1/x 200 degree
 }
 
 Ctxt FHEController::eval_gelu_function(const Ctxt &c, double min, double max, double mult, int degree) {

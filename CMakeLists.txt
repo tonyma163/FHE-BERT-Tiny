@@ -34,13 +34,20 @@ set(OpenFHE_LIB_DIR "/usr/local/lib")
 # ------------------------------------------
 # 5. Define the Executable
 # ------------------------------------------
-add_executable(FHE-BERT-Tiny
-    src/main.cpp
-    src/FHEController.cpp
-    src/FHEController.h
-    src/Utils.h
-)
 
+#add_executable(FHE-BERT-Tiny
+#    src/main.cpp
+#    src/FHEController.cpp
+#    src/FHEController.h
+#    src/Utils.h
+#)
+
+add_executable(FHE-BERT-Tiny
+    newsrc/main.cpp
+    newsrc/FHEController.cpp
+    newsrc/FHEController.h
+    newsrc/Utils.h
+)
 # ------------------------------------------
 # 6. Include Directories Scoped to the Target
 # ------------------------------------------

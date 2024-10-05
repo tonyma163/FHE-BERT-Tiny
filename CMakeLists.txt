@@ -70,6 +70,36 @@ link_directories(${OpenFHE_LIB_DIR})
 # 8. Find Required Packages
 # ------------------------------------------
 # OpenMP
+if(APPLE)
+    if(CMAKE_C_COMPILER_ID MATCHES "Clang")
+        set(OpenMP_C "${CMAKE_C_COMPILER}")
+        set(OpenMP_C_FLAGS "-Xpreprocessor -fopenmp")
+        set(OpenMP_C_LIB_NAMES "omp")
+    endif()
+    if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+        set(OpenMP_CXX "${CMAKE_CXX_COMPILER}")
+        set(OpenMP_CXX_FLAGS "-Xpreprocessor -fopenmp")
+        set(OpenMP_CXX_LIB_NAMES "omp")
+    endif()
+
+    # Check for Homebrew installation of libomp
+    execute_process(
+        COMMAND brew --prefix libomp
+        OUTPUT_VARIABLE HOMEBREW_LIBOMP_PREFIX
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+    if(HOMEBREW_LIBOMP_PREFIX)
+        set(OpenMP_C_FLAGS "${OpenMP_C_FLAGS} -I${HOMEBREW_LIBOMP_PREFIX}/include")
+        set(OpenMP_CXX_FLAGS "${OpenMP_CXX_FLAGS} -I${HOMEBREW_LIBOMP_PREFIX}/include")
+        set(OpenMP_omp_LIBRARY "${HOMEBREW_LIBOMP_PREFIX}/lib/libomp.dylib")
+    else()
+        # Fallback to the default location
+        set(OpenMP_C_FLAGS "${OpenMP_C_FLAGS} -I/usr/local/opt/libomp/include")
+        set(OpenMP_CXX_FLAGS "${OpenMP_CXX_FLAGS} -I/usr/local/opt/libomp/include")
+        set(OpenMP_omp_LIBRARY "/usr/local/opt/libomp/lib/libomp.dylib")
+    endif()
+endif()
+
 find_package(OpenMP REQUIRED)
 
 # GSL
@@ -80,37 +110,25 @@ find_package(GSL REQUIRED)
 # ------------------------------------------
 if(BUILD_STATIC)
     set(OpenFHE_LIBS
-        OPENFHEbinfhe
-        OPENFHEcore
-        OPENFHEpke
+        ${OpenFHE_LIB_DIR}/libOPENFHEbinfhe.a
+        ${OpenFHE_LIB_DIR}/libOPENFHEcore.a
+        ${OpenFHE_LIB_DIR}/libOPENFHEpke.a
         # Add other OpenFHE static libraries as needed
     )
-    # Link with static OpenFHE libraries
-    target_link_libraries(FHE-BERT-Tiny PRIVATE
-        ${OpenFHE_LIBS}
-        GSL::gsl
-        OpenMP::OpenMP_CXX
-    )
-    # Set linker flags for static linking if required
-    target_compile_options(FHE-BERT-Tiny PRIVATE ${OpenFHE_CXX_FLAGS})
-    target_link_options(FHE-BERT-Tiny PRIVATE ${OpenFHE_EXE_LINKER_FLAGS} -static)
 else()
     set(OpenFHE_LIBS
-        OPENFHEbinfhe
-        OPENFHEcore
-        OPENFHEpke
+        ${OpenFHE_LIB_DIR}/libOPENFHEbinfhe.dylib
+        ${OpenFHE_LIB_DIR}/libOPENFHEcore.dylib
+        ${OpenFHE_LIB_DIR}/libOPENFHEpke.dylib
         # Add other OpenFHE shared libraries as needed
     )
-    target_link_libraries(FHE-BERT-Tiny PRIVATE
-        ${OpenFHE_LIBS}
-        GSL::gsl
-        OpenMP::OpenMP_CXX
-    )
-    set_target_properties(FHE-BERT-Tiny PROPERTIES
-        BUILD_WITH_INSTALL_RPATH TRUE
-        INSTALL_RPATH "/usr/local/lib"
-    )
 endif()
+
+target_link_libraries(FHE-BERT-Tiny PRIVATE
+    ${OpenFHE_LIBS}
+    GSL::gsl
+    OpenMP::OpenMP_CXX
+)
 
 # ------------------------------------------
 # 10. Link stdc++fs If Necessary

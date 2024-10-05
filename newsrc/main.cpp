@@ -132,7 +132,7 @@ Ctxt classifier(Ctxt input) {
 Ctxt pooler(Ctxt input) {
     auto start = high_resolution_clock::now();
 
-    double tanhScale = 1 / 70.0; // tanh -30.919, 27.771 -> -20, 20 -> 30?
+    double tanhScale = 1 / 67.0; // tanh -30.919, 27.771 -> -20, 20 -> 30?
 
     Ptxt weight = controller.read_plain_input("../weights-emotion/pooler_dense_weight.txt", input->GetLevel(), tanhScale);
     Ptxt bias = controller.read_plain_repeated_input("../weights-emotion/pooler_dense_bias.txt", input->GetLevel(), tanhScale);
@@ -145,7 +145,7 @@ Ctxt pooler(Ctxt input) {
 
     output = controller.bootstrap(output);
 
-    output = controller.eval_tanh_function(output, -1, 1, tanhScale, 91); // pooler - tanh 300 degree
+    output = controller.eval_tanh_function(output, -1, 1, tanhScale, 313); // pooler - tanh 300 degree
 
     if (verbose) cout << "The evaluation of Pooler took: " << (duration_cast<milliseconds>( high_resolution_clock::now() - start)).count() / 1000.0 << " seconds." << endl;
     if (verbose) controller.print(output, 128, "Pooler (Repeated)");
@@ -181,7 +181,7 @@ Ctxt encoder2(vector<Ctxt> inputs) {
 
     controller.print_min_max(scores_sum);
 
-    Ctxt scores_denominator = controller.eval_inverse_naive_2(scores_sum, 0, 4, 1); // encoder2 - 1/x 3, 145000 (why 3, 1300000 becomes this?)
+    Ctxt scores_denominator = controller.eval_inverse_naive_2(scores_sum, 0.001, 3.5, 1); // encoder2 - 1/x 3, 145000 (why 3, 1300000 becomes this?)
 
     scores_denominator = controller.bootstrap(scores_denominator);
 
@@ -243,7 +243,7 @@ Ctxt encoder2(vector<Ctxt> inputs) {
 
     start = high_resolution_clock::now();
 
-    double GELU_max_abs_value = 1 / 35.0; // gelu -12.625, 17.3 -> 17.0 (select the larger one?)
+    double GELU_max_abs_value = 1 / 33.5; // gelu -12.625, 17.3 -> 17.0 (select the larger one?)
 
     Ptxt intermediate_w_1 = controller.read_plain_input("../weights-emotion/layer1_intermediate_weight1.txt", wrappedOutput->GetLevel(), GELU_max_abs_value);
     Ptxt intermediate_w_2 = controller.read_plain_input("../weights-emotion/layer1_intermediate_weight2.txt", wrappedOutput->GetLevel(), GELU_max_abs_value);
@@ -259,7 +259,7 @@ Ctxt encoder2(vector<Ctxt> inputs) {
     output = controller.generate_containers(output, nullptr);
 
     for (int i = 0; i < output.size(); i++) {
-        output[i] = controller.eval_gelu_function(output[i], -1, 1, GELU_max_abs_value, 37); // encoder2 gelu 59 degree
+        output[i] = controller.eval_gelu_function(output[i], -1, 1, GELU_max_abs_value, 102); // encoder2 gelu 59 degree
         output[i] = controller.bootstrap(output[i]);
     }
 
@@ -330,7 +330,7 @@ vector<Ctxt> encoder1() {
     scores = controller.eval_exp(scores, inputs.size());
 
     Ctxt scores_sum = controller.rotsum(scores, 128, 128);
-    Ctxt scores_denominator = controller.eval_inverse_naive(scores_sum, 3, 13500); // encoder1 - 1/x
+    Ctxt scores_denominator = controller.eval_inverse_naive(scores_sum, 3, 13700); // encoder1 - 1/x
 
     scores = controller.mult(scores, scores_denominator);
 
@@ -381,7 +381,7 @@ vector<Ctxt> encoder1() {
 
     start = high_resolution_clock::now();
 
-    double GELU_max_abs_value = 1 / 14; // gelu - -14, 11 becomes 13.5 (Why?)
+    double GELU_max_abs_value = 1 / 13.5; // gelu - -14, 11 becomes 13.5 (Why?)
 
     Ptxt intermediate_w_1 = controller.read_plain_input("../weights-emotion/layer0_intermediate_weight1.txt", wrappedOutput->GetLevel(), GELU_max_abs_value);
     Ptxt intermediate_w_2 = controller.read_plain_input("../weights-emotion/layer0_intermediate_weight2.txt", wrappedOutput->GetLevel(), GELU_max_abs_value);
@@ -395,11 +395,14 @@ vector<Ctxt> encoder1() {
     output = controller.matmulRElarge(output, dense_weights, intermediate_bias);
 
     output = controller.generate_containers(output, nullptr);
-
+    cout << "Generated containers" << endl;
     for (int i = 0; i < output.size(); i++) {
-        output[i] = controller.eval_gelu_function(output[i], -1, 1, GELU_max_abs_value, 100); // gelu encoder1 119 degree
+        cout << "Evaluating gelu" << endl;
+        output[i] = controller.eval_gelu_function(output[i], -1, 1, GELU_max_abs_value, 363); //100 // gelu encoder1 119 degree
+        cout << "Bootstrapped" << endl;
         output[i] = controller.bootstrap(output[i]);
     }
+    cout << "looped" << endl;
 
     vector<vector<Ctxt>> unwrappedLargeOutput = controller.unwrapRepeatedLarge(output, inputs.size());
 

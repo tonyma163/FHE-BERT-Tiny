@@ -33,7 +33,7 @@ void FHEController::generate_context(bool serialize, bool secure) {
     uint32_t levelsUsedBeforeBootstrap = 12;
 
     circuit_depth = levelsUsedBeforeBootstrap + FHECKKSRNS::GetBootstrapDepth(approxBootstrapDepth, level_budget, SPARSE_TERNARY);
-
+    circuit_depth+=1;
     cout << endl << "Ciphertexts depth: " << circuit_depth << ", available multiplications: " << levelsUsedBeforeBootstrap - 2 << endl;
 
     parameters.SetMultiplicativeDepth(circuit_depth);
@@ -1275,11 +1275,11 @@ Ctxt FHEController::eval_inverse(const Ctxt &c, double min, double max) {
 }
 
 Ctxt FHEController::eval_inverse_naive(const Ctxt &c, double min, double max) {
-    return context->EvalChebyshevFunction([](double x) -> double { return 1 / x; }, c, min, max, 95); // encoder1 - 1/x 119 degree
+    return context->EvalChebyshevFunction([](double x) -> double { return 1 / x; }, c, min, max, 196); //95// encoder1 - 1/x 119 degree
 }
 
 Ctxt FHEController::eval_inverse_naive_2(const Ctxt &c, double min, double max, double mult) {
-    return context->EvalChebyshevFunction([mult](double x) -> double { return mult / x; }, c, min, max, 38); // encoder1 - 1/x 200 degree
+    return context->EvalChebyshevFunction([mult](double x) -> double { return mult / x; }, c, min, max, 363); //100// encoder1 - 1/x 200 degree
 }
 
 Ctxt FHEController::eval_gelu_function(const Ctxt &c, double min, double max, double mult, int degree) {

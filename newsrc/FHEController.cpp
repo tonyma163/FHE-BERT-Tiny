@@ -1275,7 +1275,7 @@ Ctxt FHEController::eval_inverse(const Ctxt &c, double min, double max) {
 }
 
 Ctxt FHEController::eval_inverse_naive(const Ctxt &c, double min, double max) {
-    return context->EvalChebyshevFunction([](double x) -> double { return 1 / x; }, c, min, max, 196); //95// encoder1 - 1/x 119 degree
+    return context->EvalChebyshevFunction([](double x) -> double { return 1 / x; }, c, min, max, 196); //196// encoder1 - 1/x 119 degree
 }
 
 Ctxt FHEController::eval_inverse_naive_2(const Ctxt &c, double min, double max, double mult) {

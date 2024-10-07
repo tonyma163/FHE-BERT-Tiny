@@ -76,13 +76,35 @@ int main(int argc, char *argv[]) {
     if (verbose) cout << "CLIENT-SIDE" << endl;
 
     if (verbose)
-        controller.print(classified, 2, "Output logits");
+        controller.print(classified, 6, "Output logits");
 
-    vector<double> plain_result = controller.decrypt_tovector(classified, 2);
+    vector<double> plain_result = controller.decrypt_tovector(classified, 6);
 
     int timing = (duration_cast<milliseconds>( high_resolution_clock::now() - start)).count() / 1000.0;
     if (verbose) cout << endl << "The evaluation of the FHE circuit took: " << timing << " seconds." << endl;
 
+    vector<string> emotions = {"sadness", "joy", "love", "anger", "fear", "surprise"};
+    int max_index = std::max_element(plain_result.begin(), plain_result.end()) - plain_result.begin();
+
+    if (plain) {
+        cout << "Outcomes:" << endl << "FHE              : ";
+        cout << emotions[max_index] << endl;
+        system(("python3 ../newsrc/python/PlainCircuit.py \"" + text + "\"").c_str());
+        
+        // Construct the result string for all emotions
+        string result_str = "[";
+        for (int i = 0; i < 6; i++) {
+            result_str += to_string(plain_result[i]);
+            if (i < 5) result_str += ", ";
+        }
+        result_str += "]";
+        
+        system(("python3 ../newsrc/python/Precision.py \"" + text + "\" " + "\"" + result_str + "\" " + to_string(timing)).c_str());
+    } else {
+        cout << "Outcome: ";
+        cout << GREEN_TEXT << emotions[max_index] << RESET_COLOR << endl;
+    }
+    /*
     if (plain) {
         cout << "Outcomes:" << endl << "FHE              : ";
         if (plain_result[0] > plain_result[1]){
@@ -101,7 +123,7 @@ int main(int argc, char *argv[]) {
             cout << GREEN_TEXT << "positive" << RESET_COLOR << " sentiment!" << endl;
         }
     }
-
+    */
 
 }
 
@@ -145,7 +167,7 @@ Ctxt pooler(Ctxt input) {
 
     output = controller.bootstrap(output);
 
-    output = controller.eval_tanh_function(output, -1, 1, tanhScale, 313); // pooler - tanh 300 degree
+    output = controller.eval_tanh_function(output, -1, 1, tanhScale, 300); // pooler - tanh 300 degree
 
     if (verbose) cout << "The evaluation of Pooler took: " << (duration_cast<milliseconds>( high_resolution_clock::now() - start)).count() / 1000.0 << " seconds." << endl;
     if (verbose) controller.print(output, 128, "Pooler (Repeated)");
@@ -181,7 +203,7 @@ Ctxt encoder2(vector<Ctxt> inputs) {
 
     controller.print_min_max(scores_sum);
 
-    Ctxt scores_denominator = controller.eval_inverse_naive_2(scores_sum, 0.001, 3.5, 1); // encoder2 - 1/x 3, 145000 (why 3, 1300000 becomes this?)
+    Ctxt scores_denominator = controller.eval_inverse_naive_2(scores_sum, 0.13, 370000, 1); // 350000// encoder2 - 1/x 3, 145000 (why 3, 1300000 becomes this?)
 
     scores_denominator = controller.bootstrap(scores_denominator);
 
@@ -347,6 +369,7 @@ vector<Ctxt> encoder1() {
     if (verbose) cout << "The evaluation of Self-Attention took: " << (duration_cast<milliseconds>( high_resolution_clock::now() - start)).count() / 1000.0 << " seconds." << endl;
     if (verbose) controller.print(output[0], 128, "Self-Attention (Repeated)");
     //Fino a qui ottengo precisione 0.9934
+    // this one is 0.9996
 
     start = high_resolution_clock::now();
 
@@ -378,7 +401,8 @@ vector<Ctxt> encoder1() {
     if (verbose) cout << "The evaluation of Self-Output took: " << (duration_cast<milliseconds>( high_resolution_clock::now() - start)).count() / 1000.0 << " seconds." << endl;
     if (verbose) controller.print_expanded(output[0], 0, 128, "Self-Output (Expanded)");
     //Fino a qui ottengo precisione 0.9964
-
+    // the accuracy is bad
+    
     start = high_resolution_clock::now();
 
     double GELU_max_abs_value = 1 / 13.5; // gelu - -14, 11 becomes 13.5 (Why?)

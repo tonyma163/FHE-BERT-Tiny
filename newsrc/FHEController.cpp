@@ -5,6 +5,8 @@
 #include "FHEController.h"
 
 void FHEController::generate_context(bool serialize, bool secure) {
+    if (secure) cout << "secured" << endl;
+    if (!secure) cout << "not secured" << endl;
     CCParams<CryptoContextCKKSRNS> parameters;
 
     num_slots = 1 << 14;
@@ -13,16 +15,16 @@ void FHEController::generate_context(bool serialize, bool secure) {
     parameters.SetSecurityLevel(lbcrypto::HEStd_128_classic);
     if (!secure) parameters.SetSecurityLevel(lbcrypto::HEStd_NotSet);
     parameters.SetNumLargeDigits(4); //d_{num} Se lo riduci, aumenti il logQP, se lo aumenti, aumenti memori
-    parameters.SetRingDim(1 << 16);
-    if (!secure) parameters.SetRingDim(1 << 15);
+    parameters.SetRingDim(1 << 16); // 16
+    if (!secure) parameters.SetRingDim(1 << 15); //15
     parameters.SetBatchSize(num_slots);
 
-    level_budget = {3, 3};
+    level_budget = {3, 3}; // origin: {3, 3}
 
     ScalingTechnique rescaleTech = FLEXIBLEAUTO;
 
-    int dcrtBits               = 52;
-    int firstMod               = 55;
+    int dcrtBits               = 55; // origin: 52
+    int firstMod               = 60; // origin: 55
 
     parameters.SetScalingModSize(dcrtBits);
     parameters.SetScalingTechnique(rescaleTech);
@@ -30,10 +32,10 @@ void FHEController::generate_context(bool serialize, bool secure) {
 
     uint32_t approxBootstrapDepth = 4 + 4;
 
-    uint32_t levelsUsedBeforeBootstrap = 12;
+    uint32_t levelsUsedBeforeBootstrap = 12; // origin: 12
 
     circuit_depth = levelsUsedBeforeBootstrap + FHECKKSRNS::GetBootstrapDepth(approxBootstrapDepth, level_budget, SPARSE_TERNARY);
-    circuit_depth+=1;
+    circuit_depth+=3;
     cout << endl << "Ciphertexts depth: " << circuit_depth << ", available multiplications: " << levelsUsedBeforeBootstrap - 2 << endl;
 
     parameters.SetMultiplicativeDepth(circuit_depth);
@@ -1271,7 +1273,7 @@ Ctxt FHEController::eval_inverse(const Ctxt &c, double min, double max) {
     Ctxt res = add(c, encode(-middle - min, c->GetLevel(), num_slots)); // lo centro
     res = mult(res, encode(1 / middle, res->GetLevel(), num_slots)); //basta prima mascherare con 1 /9995 e addare -10005/9995 dopopì
 
-    return context->EvalChebyshevFunction([](double x) -> double { return 1 / ((x * 9895) + 9995); }, res, -1, 1, 200);
+    return context->EvalChebyshevFunction([](double x) -> double { return 1 / ((x * 9895) + 9995); }, res, -1, 1, 356);
 }
 
 Ctxt FHEController::eval_inverse_naive(const Ctxt &c, double min, double max) {
@@ -1279,7 +1281,7 @@ Ctxt FHEController::eval_inverse_naive(const Ctxt &c, double min, double max) {
 }
 
 Ctxt FHEController::eval_inverse_naive_2(const Ctxt &c, double min, double max, double mult) {
-    return context->EvalChebyshevFunction([mult](double x) -> double { return mult / x; }, c, min, max, 363); //100// encoder1 - 1/x 200 degree
+    return context->EvalChebyshevFunction([mult](double x) -> double { return mult / x; }, c, min, max, 404); //100// encoder1 - 1/x 200 degree
 }
 
 Ctxt FHEController::eval_gelu_function(const Ctxt &c, double min, double max, double mult, int degree) {

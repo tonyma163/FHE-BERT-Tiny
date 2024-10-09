@@ -244,14 +244,14 @@ Ctxt encoder2(vector<Ctxt> inputs) {
 
     Ctxt wrappedOutput = controller.wrapUpExpanded(output);
 
-    Ptxt precomputed_mean = controller.read_plain_repeated_input("../precomputed_layernorm/layer1_selfoutput_mean.txt", wrappedOutput->GetLevel(), -1);
+    Ptxt precomputed_mean = controller.read_plain_repeated_input("../emotion-precompute/layer1_selfoutput_mean.txt", wrappedOutput->GetLevel(), -1);
     wrappedOutput = controller.add(wrappedOutput, precomputed_mean);
 
     wrappedOutput = controller.bootstrap(wrappedOutput);
 
-    Ptxt vy = controller.read_plain_input("../precomputed_layernorm/layer1_selfoutput_vy.txt", wrappedOutput->GetLevel(), 1);
+    Ptxt vy = controller.read_plain_input("../emotion-precompute/layer1_selfoutput_vy.txt", wrappedOutput->GetLevel(), 1);
     wrappedOutput = controller.mult(wrappedOutput, vy);
-    Ptxt bias = controller.read_plain_expanded_input("../precomputed_layernorm/layer1_selfoutput_normbias.txt", wrappedOutput->GetLevel(), 1, inputs.size());
+    Ptxt bias = controller.read_plain_expanded_input("../emotion-precompute/layer1_selfoutput_normbias.txt", wrappedOutput->GetLevel(), 1, inputs.size());
     wrappedOutput = controller.add(wrappedOutput, bias);
 
     Ctxt output_copy = wrappedOutput->Clone(); //Required at the last layernorm
@@ -302,12 +302,12 @@ Ctxt encoder2(vector<Ctxt> inputs) {
 
     wrappedOutput = controller.add(wrappedOutput, output_copy);
 
-    precomputed_mean = controller.read_plain_repeated_input("../precomputed_layernorm/layer1_output_mean.txt", wrappedOutput->GetLevel(), -1);
+    precomputed_mean = controller.read_plain_repeated_input("../emotion-precompute/layer1_output_mean.txt", wrappedOutput->GetLevel(), -1);
     wrappedOutput = controller.add(wrappedOutput, precomputed_mean);
 
-    vy = controller.read_plain_input("../precomputed_layernorm/layer1_output_vy.txt", wrappedOutput->GetLevel(), 1);
+    vy = controller.read_plain_input("../emotion-precompute/layer1_output_vy.txt", wrappedOutput->GetLevel(), 1);
     wrappedOutput = controller.mult(wrappedOutput, vy);
-    bias = controller.read_plain_expanded_input("../precomputed_layernorm/layer1_output_normbias.txt", wrappedOutput->GetLevel(), 1, inputs.size());
+    bias = controller.read_plain_expanded_input("../emotion-precompute/layer1_output_normbias.txt", wrappedOutput->GetLevel(), 1, inputs.size());
     wrappedOutput = controller.add(wrappedOutput, bias);
 
     output = controller.unwrapExpanded(wrappedOutput, inputs.size());
@@ -384,12 +384,12 @@ vector<Ctxt> encoder1() {
 
     Ctxt wrappedOutput = controller.wrapUpExpanded(output);
 
-    Ptxt precomputed_mean = controller.read_plain_repeated_input("../precomputed_layernorm/layer0_selfoutput_mean.txt", wrappedOutput->GetLevel(), -1);
+    Ptxt precomputed_mean = controller.read_plain_repeated_input("../emotion-precompute/layer0_selfoutput_mean.txt", wrappedOutput->GetLevel(), -1);
     wrappedOutput = controller.add(wrappedOutput, precomputed_mean);
 
-    Ptxt vy = controller.read_plain_input("../precomputed_layernorm/layer0_selfoutput_vy.txt", wrappedOutput->GetLevel(), 1);
+    Ptxt vy = controller.read_plain_input("../emotion-precompute/layer0_selfoutput_vy.txt", wrappedOutput->GetLevel(), 1);
     wrappedOutput = controller.mult(wrappedOutput, vy);
-    Ptxt bias = controller.read_plain_expanded_input("../precomputed_layernorm/layer0_selfoutput_normbias.txt", wrappedOutput->GetLevel(), 1, inputs.size());
+    Ptxt bias = controller.read_plain_expanded_input("../emotion-precompute/layer0_selfoutput_normbias.txt", wrappedOutput->GetLevel(), 1, inputs.size());
     wrappedOutput = controller.add(wrappedOutput, bias);
 
     wrappedOutput = controller.bootstrap(wrappedOutput);
@@ -446,12 +446,12 @@ vector<Ctxt> encoder1() {
 
     wrappedOutput = controller.add(wrappedOutput, output_copy);
 
-    precomputed_mean = controller.read_plain_repeated_input("../precomputed_layernorm/layer0_output_mean.txt", wrappedOutput->GetLevel(), -1);
+    precomputed_mean = controller.read_plain_repeated_input("../emotion-precompute/layer0_output_mean.txt", wrappedOutput->GetLevel(), -1);
     wrappedOutput = controller.add(wrappedOutput, precomputed_mean);
 
-    vy = controller.read_plain_input("../precomputed_layernorm/layer0_output_vy.txt", wrappedOutput->GetLevel(), 1);
+    vy = controller.read_plain_input("../emotion-precompute/layer0_output_vy.txt", wrappedOutput->GetLevel(), 1);
     wrappedOutput = controller.mult(wrappedOutput, vy);
-    bias = controller.read_plain_expanded_input("../precomputed_layernorm/layer0_output_normbias.txt", wrappedOutput->GetLevel(), 1, inputs.size());
+    bias = controller.read_plain_expanded_input("../emotion-precompute/layer0_output_normbias.txt", wrappedOutput->GetLevel(), 1, inputs.size());
     wrappedOutput = controller.add(wrappedOutput, bias);
 
     output = controller.unwrapExpanded(wrappedOutput, inputs.size());

@@ -401,20 +401,20 @@ vector<Ctxt> encoder1() {
     if (verbose) cout << "The evaluation of Self-Output took: " << (duration_cast<milliseconds>( high_resolution_clock::now() - start)).count() / 1000.0 << " seconds." << endl;
     if (verbose) controller.print_expanded(output[0], 0, 128, "Self-Output (Expanded)");
     //Fino a qui ottengo precisione 0.9964
-    // the accuracy is bad
+    // the accuracy is 0.8715
     
     start = high_resolution_clock::now();
 
-    double GELU_max_abs_value = 1 / 13.5; // gelu - -14, 11 becomes 13.5 (Why?)
+    double GELU_max_abs_value = 1 / 13.7; // gelu - -14, 11 becomes 13.5 (Why?)
 
-    Ptxt intermediate_w_1 = controller.read_plain_input("../weights-emotion/layer0_intermediate_weight1.txt", wrappedOutput->GetLevel(), GELU_max_abs_value);
-    Ptxt intermediate_w_2 = controller.read_plain_input("../weights-emotion/layer0_intermediate_weight2.txt", wrappedOutput->GetLevel(), GELU_max_abs_value);
-    Ptxt intermediate_w_3 = controller.read_plain_input("../weights-emotion/layer0_intermediate_weight3.txt", wrappedOutput->GetLevel(), GELU_max_abs_value);
-    Ptxt intermediate_w_4 = controller.read_plain_input("../weights-emotion/layer0_intermediate_weight4.txt", wrappedOutput->GetLevel(), GELU_max_abs_value);
+    Ptxt intermediate_w_1 = controller.read_plain_input("../new-weights-emotion/layer0_intermediate_weight1.txt", wrappedOutput->GetLevel(), GELU_max_abs_value);
+    Ptxt intermediate_w_2 = controller.read_plain_input("../new-weights-emotion/layer0_intermediate_weight2.txt", wrappedOutput->GetLevel(), GELU_max_abs_value);
+    Ptxt intermediate_w_3 = controller.read_plain_input("../new-weights-emotion/layer0_intermediate_weight3.txt", wrappedOutput->GetLevel(), GELU_max_abs_value);
+    Ptxt intermediate_w_4 = controller.read_plain_input("../new-weights-emotion/layer0_intermediate_weight4.txt", wrappedOutput->GetLevel(), GELU_max_abs_value);
 
     vector<Ptxt> dense_weights = {intermediate_w_1, intermediate_w_2, intermediate_w_3, intermediate_w_4};
 
-    Ptxt intermediate_bias = controller.read_plain_input("../weights-emotion/layer0_intermediate_bias.txt", output[0]->GetLevel() + 1, GELU_max_abs_value);
+    Ptxt intermediate_bias = controller.read_plain_input("../new-weights-emotion/layer0_intermediate_bias.txt", output[0]->GetLevel() + 1, GELU_max_abs_value);
 
     output = controller.matmulRElarge(output, dense_weights, intermediate_bias);
 
@@ -422,7 +422,7 @@ vector<Ctxt> encoder1() {
     cout << "Generated containers" << endl;
     for (int i = 0; i < output.size(); i++) {
         cout << "Evaluating gelu" << endl;
-        output[i] = controller.eval_gelu_function(output[i], -1, 1, GELU_max_abs_value, 363); //100 // gelu encoder1 119 degree
+        output[i] = controller.eval_gelu_function(output[i], -1, 1, GELU_max_abs_value, 30); //100 // gelu encoder1 119 degree
         cout << "Bootstrapped" << endl;
         output[i] = controller.bootstrap(output[i]);
     }

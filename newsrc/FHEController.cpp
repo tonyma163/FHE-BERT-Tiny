@@ -23,8 +23,8 @@ void FHEController::generate_context(bool serialize, bool secure) {
 
     ScalingTechnique rescaleTech = FLEXIBLEAUTO;
 
-    int dcrtBits               = 55; // origin: 52
-    int firstMod               = 60; // origin: 55
+    int dcrtBits               = 52; // origin: 52
+    int firstMod               = 55; // origin: 55
 
     parameters.SetScalingModSize(dcrtBits);
     parameters.SetScalingTechnique(rescaleTech);
@@ -1273,7 +1273,7 @@ Ctxt FHEController::eval_inverse(const Ctxt &c, double min, double max) {
     Ctxt res = add(c, encode(-middle - min, c->GetLevel(), num_slots)); // lo centro
     res = mult(res, encode(1 / middle, res->GetLevel(), num_slots)); //basta prima mascherare con 1 /9995 e addare -10005/9995 dopopì
 
-    return context->EvalChebyshevFunction([](double x) -> double { return 1 / ((x * 9895) + 9995); }, res, -1, 1, 356);
+    return context->EvalChebyshevFunction([](double x) -> double { return 1 / ((x * 9895) + 9995); }, res, -1, 1, 200);
 }
 
 Ctxt FHEController::eval_inverse_naive(const Ctxt &c, double min, double max) {
@@ -1281,7 +1281,7 @@ Ctxt FHEController::eval_inverse_naive(const Ctxt &c, double min, double max) {
 }
 
 Ctxt FHEController::eval_inverse_naive_2(const Ctxt &c, double min, double max, double mult) {
-    return context->EvalChebyshevFunction([mult](double x) -> double { return mult / x; }, c, min, max, 404); //100// encoder1 - 1/x 200 degree
+    return context->EvalChebyshevFunction([mult](double x) -> double { return mult / x; }, c, min, max, 200); //100// encoder1 - 1/x 200 degree
 }
 
 Ctxt FHEController::eval_gelu_function(const Ctxt &c, double min, double max, double mult, int degree) {

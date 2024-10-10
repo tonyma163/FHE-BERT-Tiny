@@ -422,7 +422,7 @@ vector<Ctxt> encoder1() {
     cout << "Generated containers" << endl;
     for (int i = 0; i < output.size(); i++) {
         cout << "Evaluating gelu" << endl;
-        output[i] = controller.eval_gelu_function(output[i], -1, 1, GELU_max_abs_value, 30); //100 // gelu encoder1 119 degree
+        output[i] = controller.eval_gelu_function(output[i], -1, 1, GELU_max_abs_value, 45); //100 // gelu encoder1 119 degree
         cout << "Bootstrapped" << endl;
         output[i] = controller.bootstrap(output[i]);
     }

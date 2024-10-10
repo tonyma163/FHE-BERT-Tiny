@@ -23,8 +23,8 @@ void FHEController::generate_context(bool serialize, bool secure) {
 
     ScalingTechnique rescaleTech = FLEXIBLEAUTO;
 
-    int dcrtBits               = 52; // origin: 52
-    int firstMod               = 55; // origin: 55
+    int dcrtBits               = 55; // origin: 52
+    int firstMod               = 59; // origin: 55
 
     parameters.SetScalingModSize(dcrtBits);
     parameters.SetScalingTechnique(rescaleTech);
